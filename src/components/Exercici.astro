@@ -1,0 +1,24 @@
+---
+interface Props {
+  /** Codi de l'exercici, per exemple "A1". */
+  id: string;
+  /** Text del títol. Per defecte "Exercici A1". */
+  etiqueta?: string;
+  /** Nivell del títol (2 o 3). */
+  nivell?: 2 | 3;
+  /** Els exercicis opcionals no bloquegen el botó «Següent». */
+  opcional?: boolean;
+}
+const { id, etiqueta = `Exercici ${id}`, nivell = 2, opcional = false } = Astro.props;
+const Titol = nivell === 3 ? 'h3' : 'h2';
+const idTitol = `ex-${id.toLowerCase()}`;
+---
+
+<section class="exercici" aria-labelledby={idTitol}>
+  <Titol id={idTitol} class="exercici__titol">{etiqueta}</Titol>
+  <div class="exercici__cos"><slot /></div>
+  <label class="marca">
+    <input type="checkbox" data-persist={`ex-${id.toLowerCase()}`} data-obligatori={opcional ? undefined : ''} data-opcional={opcional ? '' : undefined} />
+    <span>He acabat: {etiqueta}</span>
+  </label>
+</section>

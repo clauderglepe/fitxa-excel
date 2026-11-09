@@ -1,0 +1,117 @@
+---
+// Enllaç per enviar la feina per correu. Un enllaç "mailto:" no pot adjuntar fitxers:
+// obre el programa de correu amb l'assumpte i el text preparats, i la persona adjunta l'Excel.
+// El text inclou els exercicis que la persona ha marcat com a fets (es llegeixen del navegador en el moment de fer clic).
+// L'adreça del destinatari es defineix amb la variable PUBLIC_EMAIL_ENTREGA (vegeu el README).
+import { getSequencia } from '../lib/passos';
+
+const adreca = String(
+  import.meta.env.PUBLIC_EMAIL_ENTREGA ?? (globalThis as any).process?.env?.PUBLIC_EMAIL_ENTREGA ?? '',
+).trim();
+
+const assumpte = "Fitxa d'Excel avançat: exercicis fets";
+const inici = [
+  'Hola,',
+  '',
+  "T'envio el fitxer d'Excel amb els exercicis de la fitxa «Excel avançat: anàlisi de vendes d'una petita empresa».",
+  '',
+];
+const final = ['', 'Una salutació,', ''];
+
+// Llista d'exercicis llegida dels propis fitxers de contingut: així no cal mantenir-la a mà.
+const passos = (await getSequencia())
+  .map((entry) => {
+    const exercicis = [...(entry.body ?? '').matchAll(/<Exercici\b([^>]*)>/g)].flatMap(([, atributs]) => {
+      const id = atributs.match(/\bid="([^"]+)"/)?.[1];
+      if (!id) return [];
+      const etiqueta = atributs.match(/\betiqueta="([^"]+)"/)?.[1];
+      return [{ id: id.toLowerCase(), curt: etiqueta ?? id, opcional: /\bopcional\b/.test(atributs) }];
+    });
+    return { titol: entry.data.title, exercicis };
+  })
+  .filter((p) => p.exercicis.length > 0);
+
+const config = { adreca, assumpte, inici, final, passos };
+
+const crea = (cos: string[]) =>
+  `mailto:${adreca}?subject=${encodeURIComponent(assumpte)}&body=${encodeURIComponent(cos.join('\r\n'))}`;
+// Enllaç de reserva (sense JavaScript): sense llista d'exercicis.
+const href = crea([...inici, ...final]);
+---
+
+<section class="enviament" aria-labelledby="enviament-titol">
+  <h2 id="enviament-titol">Envia la teva feina</h2>
+  <p>
+    Quan acabis, pots enviar el teu fitxer d'Excel per correu electrònic. El botó obre el teu programa de correu amb el
+    missatge ja preparat, que inclou els exercicis que has marcat com a fets. <strong>Recorda adjuntar el fitxer
+    d'Excel</strong> abans d'enviar-lo: el correu no l'adjunta automàticament.
+  </p>
+  <p>
+    <a class="btn" href={href} data-correu data-config={JSON.stringify(config)}>
+      Envia l'exercici per correu electrònic
+    </a>
+  </p>
+  {
+    adreca && (
+      <p>
+        Si no s'obre el programa de correu, escriu a <strong>{adreca}</strong> amb l'assumpte «{assumpte}».
+      </p>
+    )
+  }
+</section>
+
+<script>
+  interface Config {
+    adreca: string;
+    assumpte: string;
+    inici: string[];
+    final: string[];
+    passos: { titol: string; exercicis: { id: string; curt: string; opcional: boolean }[] }[];
+  }
+
+  const enllac = document.querySelector<HTMLAnchorElement>('a[data-correu]');
+  if (enllac?.dataset.config) {
+    const cfg: Config = JSON.parse(enllac.dataset.config);
+
+    const marcat = (id: string) => {
+      try {
+        return localStorage.getItem(`fitxa-excel:ex-${id}`) === '1';
+      } catch {
+        return false;
+      }
+    };
+
+    const crea = () => {
+      const grups = cfg.passos
+        .map((p) => ({ titol: p.titol, fets: p.exercicis.filter((e) => marcat(e.id)).map((e) => e.curt) }))
+        .filter((g) => g.fets.length > 0);
+
+      const cos = [...cfg.inici];
+      let saltat = false;
+      try {
+        saltat = localStorage.getItem('fitxa-excel:saltar-ampliacio') === '1';
+      } catch {
+        /* sense emmagatzematge: ho ignorem */
+      }
+      const opcionalsFets = cfg.passos.some((p) => p.exercicis.some((e) => e.opcional && marcat(e.id)));
+
+      if (grups.length > 0) {
+        cos.push('Exercicis marcats com a fets:');
+        grups.forEach((g) => cos.push(`- ${g.titol}: ${g.fets.join(', ')}`));
+      } else {
+        cos.push("Encara no he marcat cap exercici a la fitxa.");
+      }
+      if (saltat && !opcionalsFets) cos.push('', 'He decidit no fer els exercicis opcionals (Ampliació).');
+      cos.push(...cfg.final);
+
+      return `mailto:${cfg.adreca}?subject=${encodeURIComponent(cfg.assumpte)}&body=${encodeURIComponent(cos.join('\r\n'))}`;
+    };
+
+    // S'actualitza en carregar la pàgina i, un cop més, just abans d'obrir el correu,
+    // per si les marques han canviat des d'una altra pestanya.
+    enllac.href = crea();
+    enllac.addEventListener('click', () => {
+      enllac.href = crea();
+    });
+  }
+</script>

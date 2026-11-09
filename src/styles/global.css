@@ -1,0 +1,921 @@
+/*
+  Tokens de color. Totes les combinacions de text compleixen WCAG AA (4,5:1 o més);
+  els components d'interfície (vores de caselles, anell de focus) compleixen 3:1 o més.
+*/
+/* Valors per defecte (tema clar). Els navegadors sense light-dark() es queden amb aquests. */
+:root {
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --superficie: #f1f5f2;
+  --superficie-2: #e1ebe5;
+  --tinta: #14201a;
+  --tinta-suau: #3f4e46;
+  --accent: #11643a;
+  --sobre-accent: #ffffff;
+  --vora: #5b6b62; /* components d'interfície */
+  --regla: #b9c8bf; /* separadors decoratius */
+  --focus: #0b3fcc;
+  --avis-bg: #fff3c4;
+  --avis-tinta: #3d2e00;
+
+  --font-text: 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-codi: 'Atkinson Hyperlegible Mono Variable', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --amplada-text: 68ch;
+  --radi: 0.25rem;
+}
+
+/* Clar i fosc amb light-dark(): segueix el dispositiu, tret que l'usuari triï un tema. */
+@supports (color: light-dark(#000, #fff)) {
+  :root {
+    --bg: light-dark(#ffffff, #0e1612);
+    --superficie: light-dark(#f1f5f2, #17231d);
+    --superficie-2: light-dark(#e1ebe5, #22332a);
+    --tinta: light-dark(#14201a, #eef3ef);
+    --tinta-suau: light-dark(#3f4e46, #bfcbc4);
+    --accent: light-dark(#11643a, #7fd9a6);
+    --sobre-accent: light-dark(#ffffff, #0e1612);
+    --vora: light-dark(#5b6b62, #8fa297);
+    --regla: light-dark(#b9c8bf, #2e4036);
+    --focus: light-dark(#0b3fcc, #ffd54a);
+    --avis-bg: light-dark(#fff3c4, #3a3000);
+    --avis-tinta: light-dark(#3d2e00, #fff0b3);
+  }
+}
+
+:root[data-tema='clar'] {
+  color-scheme: light;
+}
+
+:root[data-tema='fosc'] {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Tot el disseny fa servir rem: canviar això escala tota la pàgina. */
+html[data-mida='gran'] {
+  font-size: 125%;
+}
+
+html[data-mida='molt-gran'] {
+  font-size: 150%;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100vh;
+  min-block-size: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--tinta);
+  font-family: var(--font-text);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  overflow-wrap: break-word;
+}
+
+main {
+  flex: 1;
+}
+
+/* ---------- Focus visible ---------- */
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: var(--radi);
+}
+
+main:focus {
+  outline: none;
+}
+
+/* ---------- Enllaç per saltar al contingut ---------- */
+
+.salta {
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  inset-block-start: -10rem;
+  z-index: 10;
+  padding: 0.75rem 1.25rem;
+  background: var(--accent);
+  color: var(--sobre-accent);
+  font-weight: 700;
+  border-radius: var(--radi);
+}
+
+.salta:focus {
+  inset-block-start: 0.75rem;
+}
+
+/* ---------- Capçalera i menú ---------- */
+
+.capcalera {
+  border-block-end: 2px solid var(--regla);
+}
+
+.capcalera__interior,
+.pagina,
+.peu__interior {
+  inline-size: min(100% - 2.5rem, 46rem);
+  margin-inline: auto;
+}
+
+.capcalera__interior {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding-block: 0.75rem;
+}
+
+.capcalera__nom {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: var(--tinta);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+.eines {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0 1.5rem;
+  min-inline-size: 0;
+}
+
+/* Quan un panell s'obre, ocupa tota la fila i l'altre botó baixa a sota. */
+.eines > details[open] {
+  flex-basis: 100%;
+}
+
+.menu,
+.ajustos {
+  min-inline-size: 0;
+}
+
+.menu__extra {
+  margin: 0.75rem 0 0;
+  padding-block-start: 0.75rem;
+  border-block-start: 2px solid var(--regla);
+}
+
+.ajustos summary {
+  display: flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: 0.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ajustos summary::marker {
+  color: var(--accent);
+}
+
+.ajustos__cos {
+  padding: 0.5rem 0 1rem;
+}
+
+.ajustos fieldset + fieldset {
+  margin-block-start: 1rem;
+}
+
+.opcions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
+}
+
+.opcio {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-block-size: 2.75rem;
+  cursor: pointer;
+}
+
+.opcio input {
+  flex: none;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.ajustos p {
+  margin: 1rem 0 0;
+}
+
+.menu summary {
+  display: flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding-inline: 0.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.menu summary::marker {
+  color: var(--accent);
+}
+
+.menu nav {
+  padding: 0.5rem 0 1rem;
+}
+
+.menu ol,
+.menu ul {
+  margin: 0;
+  padding-inline-start: 1.75rem;
+}
+
+.menu__docent {
+  margin-block-start: 0.75rem;
+  padding-block-start: 0.75rem;
+  border-block-start: 2px solid var(--regla);
+  list-style: none;
+  padding-inline-start: 0;
+}
+
+.menu li a {
+  display: inline-block;
+  padding-block: 0.4rem;
+}
+
+.menu a[aria-current='page'] {
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.menu a[aria-current='page']::after {
+  content: ' (pàgina actual)';
+  font-weight: 400;
+}
+
+/* ---------- Pàgina ---------- */
+
+.pagina {
+  padding-block: 2rem 3rem;
+}
+
+.pagina > p,
+.pagina li,
+.pagina dd {
+  max-inline-size: var(--amplada-text);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  margin: 1rem 0 0.75rem;
+  font-size: clamp(2rem, 1.5rem + 2.4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+p,
+ul,
+ol,
+dl {
+  margin-block: 0 1rem;
+}
+
+li + li {
+  margin-block-start: 0.5rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 4px;
+}
+
+strong {
+  font-weight: 800;
+}
+
+.posicio {
+  margin: 0;
+  font-weight: 700;
+  color: var(--tinta-suau);
+}
+
+.durada {
+  margin-block-end: 1.5rem;
+  color: var(--tinta-suau);
+}
+
+.avis {
+  padding: 0.75rem 1rem;
+  background: var(--avis-bg);
+  color: var(--avis-tinta);
+  border-inline-start: 6px solid var(--avis-tinta);
+  border-radius: var(--radi);
+  font-weight: 700;
+}
+
+/* ---------- Fila de cel·les (progrés) ---------- */
+
+.progres {
+  display: flex;
+  gap: 3px;
+  margin-block: 0.75rem;
+}
+
+.progres__cella {
+  flex: 1;
+  block-size: 0.875rem;
+  border: 2px solid var(--vora);
+  border-radius: 2px;
+}
+
+.progres__cella.is-feta {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.progres__cella.is-actual {
+  background: var(--superficie-2);
+  border-color: var(--accent);
+  border-block-end-width: 6px;
+}
+
+/* ---------- Inici ---------- */
+
+.pagina--inici h1 {
+  margin-block-start: 1.5rem;
+}
+
+.dades-clau {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1.5rem;
+  padding: 1.25rem;
+  background: var(--superficie);
+  border-radius: var(--radi);
+  border-inline-start: 6px solid var(--accent);
+}
+
+.dades-clau div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.dades-clau dt {
+  font-weight: 800;
+}
+
+.dades-clau dd {
+  margin: 0;
+}
+
+/* ---------- Botons i enllaços de pas ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 3rem;
+  padding: 0.65rem 1.5rem;
+  border: 2px solid var(--accent);
+  border-radius: var(--radi);
+  background: var(--accent);
+  color: var(--sobre-accent);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn--sec {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.2em;
+}
+
+.seq {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-start: 3rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 2px solid var(--regla);
+}
+
+.seq__enllac {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-block-size: 3.5rem;
+  min-inline-size: min(100%, 12rem);
+  padding: 0.65rem 1.25rem;
+  border: 2px solid var(--accent);
+  border-radius: var(--radi);
+  text-decoration: none;
+  color: var(--tinta);
+}
+
+.seq__enllac--seguent {
+  margin-inline-start: auto;
+  background: var(--accent);
+  color: var(--sobre-accent);
+  text-align: end;
+}
+
+.seq__enllac:hover .seq__titol {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.seq__etiqueta {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.seq__titol {
+  font-weight: 800;
+}
+
+/* Avisos sobre el progrés */
+
+.avis-progres,
+.opcionals {
+  margin-block: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--superficie);
+  border-inline-start: 6px solid var(--accent);
+  border-radius: var(--radi);
+}
+
+.opcionals p {
+  margin-block-end: 0.5rem;
+}
+
+.opcionals .marca--punt {
+  padding-inline: 0;
+  background: none;
+}
+
+.menu__nota {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--tinta-suau);
+}
+
+/* Pas següent bloquejat fins que es marquin tots els exercicis */
+
+.seq-ajuda {
+  margin: 2.5rem 0 -2rem;
+  font-weight: 700;
+}
+
+.seq-ajuda:empty {
+  margin: 0;
+}
+
+.seq__enllac--seguent[aria-disabled='true'] {
+  background: transparent;
+  color: var(--tinta-suau);
+  border-style: dashed;
+  border-color: var(--vora);
+  cursor: not-allowed;
+}
+
+.seq__enllac--seguent[aria-disabled='true']:hover .seq__titol {
+  text-decoration: none;
+}
+
+.seq__enllac--seguent[aria-disabled='true'] .seq__etiqueta::after {
+  content: ' (bloquejat)';
+}
+
+/* ---------- Exercicis ---------- */
+
+.exercici {
+  margin-block: 1.5rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  background: var(--superficie);
+  border-radius: var(--radi);
+  border-inline-start: 6px solid var(--accent);
+}
+
+h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.exercici__titol {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.exercici__cos > :last-child {
+  margin-block-end: 0.75rem;
+}
+
+.marca {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-block-size: 2.75rem;
+  padding-block: 0.5rem;
+  cursor: pointer;
+}
+
+.marca input {
+  flex: none;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  margin: 0.1rem 0 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.marca span {
+  font-weight: 700;
+}
+
+.marca--punt {
+  padding-inline: 1rem;
+  background: var(--superficie);
+  border-radius: var(--radi);
+}
+
+.marca--punt + .marca--punt {
+  margin-block-start: 0.75rem;
+}
+
+.marca--punt span {
+  font-weight: 400;
+}
+
+fieldset {
+  min-inline-size: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-block-end: 0.75rem;
+  padding: 0;
+  font-weight: 800;
+}
+
+/* ---------- Codi i tecles ---------- */
+
+code,
+kbd {
+  font-family: var(--font-codi);
+  font-size: 0.95em;
+}
+
+code {
+  padding: 0.1em 0.35em;
+  background: var(--superficie-2);
+  border-radius: var(--radi);
+  overflow-wrap: anywhere;
+}
+
+kbd {
+  display: inline-block;
+  padding: 0.05em 0.45em;
+  border: 2px solid var(--vora);
+  border-radius: var(--radi);
+  background: var(--bg);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ---------- Taules de dades ---------- */
+
+.dades {
+  margin-block-end: 2.5rem;
+}
+
+.dades:first-of-type :is(h2, h3) {
+  margin-block-start: 0;
+}
+
+.accions {
+  margin-block-end: 0.75rem;
+}
+
+.estat {
+  min-block-size: 1.65em;
+  margin-block-end: 0.75rem;
+  font-weight: 700;
+}
+
+details > summary {
+  min-block-size: 2.75rem;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+details > summary::marker {
+  color: var(--accent);
+}
+
+.dades details {
+  border: 2px solid var(--vora);
+  border-radius: var(--radi);
+  padding-inline: 1rem;
+}
+
+.dades details[open] {
+  padding-block-end: 1rem;
+}
+
+.taula-scroll {
+  overflow-x: auto;
+  margin-block: 0.5rem 1rem;
+  max-inline-size: 100%;
+}
+
+table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+caption {
+  padding-block-end: 0.5rem;
+  text-align: start;
+  font-weight: 700;
+}
+
+th,
+td {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--regla);
+  text-align: start;
+  vertical-align: top;
+}
+
+thead th {
+  background: var(--superficie-2);
+  white-space: nowrap;
+}
+
+tbody th {
+  font-weight: 700;
+  background: var(--superficie);
+}
+
+tbody tr:nth-child(even) td {
+  background: var(--superficie);
+}
+
+.num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Pàgina de la versió per imprimir (en pantalla) ---------- */
+
+.pas-imprimible {
+  margin-block-start: 2.5rem;
+  padding-block-start: 0.5rem;
+  border-block-start: 2px solid var(--regla);
+}
+
+.pas-imprimible > h2 {
+  margin-block-start: 1.5rem;
+}
+
+/* ---------- Peu ---------- */
+
+.peu {
+  margin-block-start: 2rem;
+  border-block-start: 2px solid var(--regla);
+  background: var(--superficie);
+  font-size: 1rem;
+}
+
+.peu__interior {
+  padding-block: 1.5rem;
+}
+
+.peu p {
+  margin-block-end: 0.75rem;
+}
+
+.logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logos li {
+  margin: 0;
+}
+
+.logos img {
+  display: block;
+  inline-size: auto;
+  max-inline-size: 100%;
+  /* Els logotips solen ser per a fons clar: els posem sobre un suport blanc. */
+  padding: 0.25rem 0.5rem;
+  background: #fff;
+  border-radius: var(--radi);
+}
+
+/* ---------- Pantalles petites ---------- */
+
+@media (max-width: 30em) {
+  .seq__enllac,
+  .seq__enllac--seguent {
+    inline-size: 100%;
+    margin-inline-start: 0;
+  }
+
+  .pagina {
+    padding-block-start: 1.25rem;
+  }
+}
+
+/* ---------- Preferències de l'usuari ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .progres__cella.is-feta,
+  .progres__cella.is-actual {
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  .btn,
+  .seq__enllac--seguent,
+  .salta {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* ---------- Impressió ---------- */
+
+@media print {
+  /* Sempre en clar i amb una mida de lletra fixa, tant si l'usuari té el tema fosc com la lletra gran. */
+  :root,
+  :root[data-tema] {
+    color-scheme: light !important;
+  }
+
+  html,
+  html[data-mida] {
+    font-size: 11pt !important;
+  }
+
+  body {
+    display: block;
+    min-block-size: 0;
+    background: #fff;
+    color: #000;
+    line-height: 1.5;
+  }
+
+  .capcalera,
+  .seq,
+  .salta,
+  .progres,
+  .eina-impressio,
+  .enviament,
+  .avis-progres,
+  .opcionals,
+  .seq-ajuda,
+  .ajustos,
+  [data-copia],
+  [data-alternativa],
+  .estat {
+    display: none !important;
+  }
+
+  .pagina,
+  .peu__interior {
+    inline-size: 100%;
+  }
+
+  .pagina {
+    padding-block: 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  .exercici,
+  .dades-clau,
+  tr {
+    break-inside: avoid;
+  }
+
+  .pas-imprimible {
+    margin-block-start: 1.25rem;
+    border-block-start: 1px solid #000;
+  }
+
+  .exercici,
+  .dades-clau {
+    background: none;
+    border: 1px solid #000;
+    border-inline-start-width: 6px;
+  }
+
+  .taula-scroll {
+    overflow: visible;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  th,
+  td {
+    border-color: #000;
+    background: none !important;
+  }
+
+  code,
+  kbd {
+    background: none;
+    border-color: #000;
+  }
+
+  a {
+    color: #000;
+  }
+
+  .peu {
+    margin-block-start: 1rem;
+    background: none;
+    border-block-start: 1px solid #000;
+  }
+
+  .logos img {
+    padding: 0;
+  }
+}

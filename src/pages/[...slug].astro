@@ -1,0 +1,64 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Navegacio from '../components/Navegacio.astro';
+import Progres from '../components/Progres.astro';
+import Exercici from '../components/Exercici.astro';
+import Punt from '../components/Punt.astro';
+import Taula from '../components/Taula.astro';
+import TaulaDades from '../components/TaulaDades.astro';
+import EnllacCorreu from '../components/EnllacCorreu.astro';
+import SaltaOpcionals from '../components/SaltaOpcionals.astro';
+import { getSequencia, getDocents } from '../lib/passos';
+
+export async function getStaticPaths() {
+  const seq = await getSequencia();
+  const docents = await getDocents();
+  return [...seq, ...docents].map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const seq = await getSequencia();
+const pos = seq.findIndex((e) => e.id === entry.id);
+const docent = entry.data.docent;
+const { Content } = await render(entry);
+// Hi ha exercicis obligatoris a la pàgina? (Es llegeixen del propi contingut.)
+const teObligatoris = [...(entry.body ?? '').matchAll(/<Exercici\b([^>]*)>/g)].some(
+  ([, atributs]) => !/\bopcional\b/.test(atributs),
+);
+
+const enllac = (e: (typeof seq)[number]) => ({ href: `/${e.id}/`, titol: e.data.title });
+const anterior = docent ? undefined : pos === 0 ? { href: '/', titol: 'Inici' } : enllac(seq[pos - 1]);
+const seguent = docent ? undefined : pos < seq.length - 1 ? enllac(seq[pos + 1]) : { href: '/', titol: "Torna a l'inici" };
+---
+
+<Base titol={entry.data.title} actual={entry.id} noindex={docent}>
+  <div class="pagina">
+    {
+      docent ? (
+        <p class="avis" role="note">
+          Aquesta pàgina és només per a la persona docent. No la comparteixis amb l'alumnat.
+        </p>
+      ) : (
+        <>
+          <p class="posicio">Pas {pos + 1} de {seq.length}</p>
+          <Progres total={seq.length} actual={pos + 1} />
+        </>
+      )
+    }
+
+    <h1>{entry.data.title}</h1>
+    {entry.data.durada && <p class="durada">Durada orientativa: {entry.data.durada}</p>}
+    {
+      teObligatoris && (
+        <p class="avis-progres" role="note">
+          <strong>Abans de començar:</strong> per passar al pas següent, has de marcar tots els exercicis d'aquesta pàgina com a fets.
+        </p>
+      )
+    }
+
+    <Content components={{ Exercici, Punt, Taula, TaulaDades, EnllacCorreu, SaltaOpcionals }} />
+
+    <Navegacio anterior={anterior} seguent={seguent} />
+  </div>
+</Base>

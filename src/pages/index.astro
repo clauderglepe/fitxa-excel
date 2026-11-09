@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import Progres from '../components/Progres.astro';
+import DadesClau from '../components/DadesClau.astro';
+import { getSequencia } from '../lib/passos';
+
+const passos = await getSequencia();
+const primer = passos[0];
+---
+
+<Base>
+  <div class="pagina pagina--inici">
+    <Progres total={passos.length} />
+    <h1>Fitxa pràctica d'Excel avançat: anàlisi de vendes d'una petita empresa</h1>
+
+    <DadesClau />
+
+    <p>
+      Aquesta fitxa té {passos.length} passos curts. Fes-los un a un, al teu ritme. Pots tornar a qualsevol pas des del
+      menú «Tots els passos».
+    </p>
+
+    <h2>Com avançar</h2>
+    <p>
+      Fes els passos en ordre. A les pàgines amb exercicis, el botó «Següent» només s'activa quan has marcat tots els
+      exercicis com a fets. Als exercicis opcionals de l'Ampliació, pots fer-los tots o marcar que no els faràs.
+    </p>
+
+    <p>
+      <a class="btn" href={`/${primer.id}/`}>Comença la fitxa</a>
+    </p>
+
+    <p><a href="/imprimeix/">Versió per imprimir</a>, amb tots els passos en una sola pàgina.</p>
+  </div>
+</Base>

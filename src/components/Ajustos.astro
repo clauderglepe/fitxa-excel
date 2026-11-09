@@ -1,0 +1,79 @@
+---
+// Panell d'ajustos de lectura: tema i mida de la lletra. Es desa al navegador.
+// Sense JavaScript el panell no es mostra (no podria fer res); la web segueix el sistema i el navegador.
+---
+
+<details class="ajustos" name="eines" data-ajustos hidden>
+  <summary>Ajustos de lectura</summary>
+  <div class="ajustos__cos">
+    <fieldset>
+      <legend>Aspecte</legend>
+      <div class="opcions">
+        <label class="opcio"><input type="radio" name="tema" value="auto" checked /> <span>Automàtic (segueix el dispositiu)</span></label>
+        <label class="opcio"><input type="radio" name="tema" value="clar" /> <span>Clar</span></label>
+        <label class="opcio"><input type="radio" name="tema" value="fosc" /> <span>Fosc</span></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Mida de la lletra</legend>
+      <div class="opcions">
+        <label class="opcio"><input type="radio" name="mida" value="normal" checked /> <span>Normal</span></label>
+        <label class="opcio"><input type="radio" name="mida" value="gran" /> <span>Gran</span></label>
+        <label class="opcio"><input type="radio" name="mida" value="molt-gran" /> <span>Molt gran</span></label>
+      </div>
+    </fieldset>
+    <p><button type="button" class="btn btn--sec" data-restableix>Restableix els ajustos</button></p>
+  </div>
+</details>
+
+<script>
+  const CLAU = 'fitxa-excel:ajustos';
+  const arrel = document.documentElement;
+  const panell = document.querySelector<HTMLElement>('[data-ajustos]');
+
+  if (panell) {
+    panell.hidden = false;
+
+    const llegeix = (): Record<string, string> => {
+      try {
+        return JSON.parse(localStorage.getItem(CLAU) ?? '{}');
+      } catch {
+        return {};
+      }
+    };
+
+    const marca = (nom: string, valor: string) => {
+      panell.querySelectorAll<HTMLInputElement>(`input[name="${nom}"]`).forEach((r) => {
+        r.checked = r.value === valor;
+      });
+    };
+
+    const sincronitza = () => {
+      marca('tema', arrel.dataset.tema ?? 'auto');
+      marca('mida', arrel.dataset.mida ?? 'normal');
+    };
+
+    const aplica = () => {
+      const tema = panell.querySelector<HTMLInputElement>('input[name="tema"]:checked')?.value ?? 'auto';
+      const mida = panell.querySelector<HTMLInputElement>('input[name="mida"]:checked')?.value ?? 'normal';
+      if (tema === 'auto') delete arrel.dataset.tema;
+      else arrel.dataset.tema = tema;
+      if (mida === 'normal') delete arrel.dataset.mida;
+      else arrel.dataset.mida = mida;
+      try {
+        if (tema === 'auto' && mida === 'normal') localStorage.removeItem(CLAU);
+        else localStorage.setItem(CLAU, JSON.stringify({ ...llegeix(), tema, mida }));
+      } catch {
+        /* Sense emmagatzematge: l'ajust funciona, però no es recorda entre visites. */
+      }
+    };
+
+    sincronitza();
+    panell.addEventListener('change', aplica);
+    panell.querySelector('[data-restableix]')?.addEventListener('click', () => {
+      marca('tema', 'auto');
+      marca('mida', 'normal');
+      aplica();
+    });
+  }
+</script>

@@ -1,0 +1,58 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import DadesClau from '../components/DadesClau.astro';
+import Punt from '../components/Punt.astro';
+import Taula from '../components/Taula.astro';
+import ExerciciImprimir from '../components/ExerciciImprimir.astro';
+import TaulaDadesImprimir from '../components/TaulaDadesImprimir.astro';
+import NoImprimir from '../components/NoImprimir.astro';
+import { getSequencia } from '../lib/passos';
+
+const passos = await getSequencia();
+const components = {
+  Exercici: ExerciciImprimir,
+  TaulaDades: TaulaDadesImprimir,
+  Punt,
+  Taula,
+  EnllacCorreu: NoImprimir,
+  SaltaOpcionals: NoImprimir,
+};
+const contingut = await Promise.all(
+  passos.map(async (entry) => ({ entry, Content: (await render(entry)).Content })),
+);
+---
+
+<Base titol="Versió per imprimir" actual="imprimeix" noindex>
+  <div class="pagina">
+    <h1>Fitxa pràctica d'Excel avançat: anàlisi de vendes d'una petita empresa</h1>
+
+    <div class="eina-impressio">
+      <p>
+        Aquesta pàgina té tots els passos junts, amb les taules obertes i els colors adaptats al paper.
+        Per imprimir-la, fes servir el botó o <kbd>Ctrl</kbd> + <kbd>P</kbd>.
+      </p>
+      <p><button type="button" class="btn" data-imprimeix hidden>Imprimeix la fitxa</button></p>
+    </div>
+
+    <DadesClau />
+
+    {
+      contingut.map(({ entry, Content }) => (
+        <section class="pas-imprimible" aria-labelledby={`pas-${entry.id}`}>
+          <h2 id={`pas-${entry.id}`}>{entry.data.title}</h2>
+          {entry.data.durada && <p class="durada">Durada orientativa: {entry.data.durada}</p>}
+          <Content components={components} />
+        </section>
+      ))
+    }
+  </div>
+</Base>
+
+<script>
+  const boto = document.querySelector<HTMLButtonElement>('[data-imprimeix]');
+  if (boto && typeof window.print === 'function') {
+    boto.hidden = false;
+    boto.addEventListener('click', () => window.print());
+  }
+</script>

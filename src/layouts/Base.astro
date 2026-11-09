@@ -1,0 +1,178 @@
+---
+import '@fontsource-variable/atkinson-hyperlegible-next/wght.css';
+import '@fontsource-variable/atkinson-hyperlegible-mono/wght.css';
+import '../styles/global.css';
+import Logotips from '../components/Logotips.astro';
+import Ajustos from '../components/Ajustos.astro';
+import { getSequencia, getDocents } from '../lib/passos';
+
+interface Props {
+  titol?: string;
+  descripcio?: string;
+  noindex?: boolean;
+  /** id del pas actual, per marcar-lo al menú. */
+  actual?: string;
+}
+
+const NOM_LLOC = "Fitxa d'Excel avançat";
+const { titol, descripcio = "Fitxa pràctica d'Excel avançat: anàlisi de vendes d'una petita empresa.", noindex = false, actual } = Astro.props;
+const titolPagina = titol ? `${titol} · ${NOM_LLOC}` : `${NOM_LLOC}: anàlisi de vendes`;
+
+const passos = await getSequencia();
+const docents = await getDocents();
+---
+
+<!doctype html>
+<html lang="ca">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content={descripcio} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline src="/ajustos-init.js"></script>
+    <title>{titolPagina}</title>
+  </head>
+  <body>
+    <a class="salta" href="#contingut">Salta al contingut</a>
+
+    <header class="capcalera">
+      <div class="capcalera__interior">
+        <a class="capcalera__nom" href="/">{NOM_LLOC}</a>
+        <div class="eines">
+          <details class="menu" name="eines">
+            <summary>Tots els passos</summary>
+            <nav aria-label="Tots els passos">
+              <p class="menu__nota">
+                Recomanem fer els passos en ordre: el botó «Següent» només s'activa quan has marcat tots els exercicis.
+              </p>
+              <ol>
+                {
+                  passos.map((p) => (
+                    <li>
+                      <a href={`/${p.id}/`} aria-current={p.id === actual ? 'page' : undefined}>
+                        {p.data.title}
+                      </a>
+                    </li>
+                  ))
+                }
+              </ol>
+              {
+                docents.length > 0 && (
+                  <ul class="menu__docent">
+                    {docents.map((p) => (
+                      <li>
+                        <a href={`/${p.id}/`} aria-current={p.id === actual ? 'page' : undefined}>
+                          {p.data.title} (només docents)
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              }
+              <p class="menu__extra">
+                <a href="/imprimeix/" aria-current={actual === 'imprimeix' ? 'page' : undefined}>
+                  Versió per imprimir
+                </a>
+              </p>
+            </nav>
+          </details>
+          <Ajustos />
+        </div>
+      </div>
+    </header>
+
+    <main id="contingut" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer class="peu">
+      <div class="peu__interior">
+        <p>Amb el suport del Departament d'Empresa i Treball.</p>
+        <Logotips />
+      </div>
+    </footer>
+
+    <script>
+      // Progrés: recorda les caselles marcades i bloqueja «Següent» fins que s'hagin fet tots els exercicis.
+      // Tot es queda al navegador (sense compte ni servidor).
+      const PREFIX = 'fitxa-excel:';
+      const caselles = document.querySelectorAll<HTMLInputElement>('input[data-persist]');
+
+      caselles.forEach((casella) => {
+        const clau = PREFIX + casella.dataset.persist;
+        try {
+          casella.checked = localStorage.getItem(clau) === '1';
+        } catch {
+          /* El navegador no permet desar dades: la casella funciona igualment. */
+        }
+        casella.addEventListener('change', () => {
+          try {
+            if (casella.checked) localStorage.setItem(clau, '1');
+            else localStorage.removeItem(clau);
+          } catch {
+            /* Ignorem l'error: només es perd el record entre visites. */
+          }
+        });
+      });
+
+      const exercicis = [...caselles].filter(
+        (c) => c.hasAttribute('data-obligatori') || c.hasAttribute('data-opcional'),
+      );
+      const salta = document.querySelector<HTMLInputElement>('input[data-salta]');
+      const seguent = document.querySelector<HTMLAnchorElement>('[data-seguent]');
+      const estat = document.querySelector<HTMLElement>('[data-seq-estat]');
+
+      if (seguent && estat && exercicis.length > 0) {
+        const desti = seguent.getAttribute('href') ?? '';
+
+        // Un enllaç no es pot "deshabilitar": li traiem l'href i el marquem com a no disponible.
+        // El deixem enfocable perquè les persones que fan servir teclat o lector de pantalla
+        // trobin el botó i sàpiguen per què no funciona.
+        const actualitza = (anunci: boolean) => {
+          const obligatorisFalten = exercicis.filter((c) => c.hasAttribute('data-obligatori') && !c.checked).length;
+          // Els opcionals es poden fer tots o descartar amb la casella «No faré els exercicis opcionals».
+          const opcionalsFalten = salta?.checked
+            ? 0
+            : exercicis.filter((c) => c.hasAttribute('data-opcional') && !c.checked).length;
+
+          if (obligatorisFalten > 0 || opcionalsFalten > 0) {
+            seguent.removeAttribute('href');
+            seguent.setAttribute('role', 'link');
+            seguent.setAttribute('aria-disabled', 'true');
+            seguent.setAttribute('aria-describedby', 'seq-ajuda');
+            seguent.tabIndex = 0;
+            if (obligatorisFalten > 0) {
+              estat.textContent =
+                obligatorisFalten === 1
+                  ? "Per continuar, marca l'exercici que et falta."
+                  : `Per continuar, marca els ${obligatorisFalten} exercicis que et falten.`;
+            } else {
+              estat.textContent =
+                opcionalsFalten === 1
+                  ? "Per continuar, marca l'exercici opcional que et falta o marca «No faré els exercicis opcionals»."
+                  : `Per continuar, marca els ${opcionalsFalten} exercicis opcionals que et falten o marca «No faré els exercicis opcionals».`;
+            }
+          } else {
+            seguent.setAttribute('href', desti);
+            seguent.removeAttribute('role');
+            seguent.removeAttribute('aria-disabled');
+            seguent.removeAttribute('aria-describedby');
+            seguent.removeAttribute('tabindex');
+            const hiHaOpcionalsSenseFer = exercicis.some((c) => c.hasAttribute('data-opcional') && !c.checked);
+            estat.textContent = !anunci
+              ? ''
+              : salta?.checked && hiHaOpcionalsSenseFer
+                ? 'Has triat no fer els exercicis opcionals. Ja pots continuar.'
+                : 'Has marcat tots els exercicis. Ja pots continuar.';
+          }
+        };
+
+        exercicis.forEach((c) => c.addEventListener('change', () => actualitza(true)));
+        salta?.addEventListener('change', () => actualitza(true));
+        actualitza(false);
+      }
+    </script>
+  </body>
+</html>

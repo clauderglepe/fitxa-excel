@@ -1,0 +1,34 @@
+---
+interface Enllac {
+  href: string;
+  titol: string;
+}
+interface Props {
+  anterior?: Enllac;
+  seguent?: Enllac;
+}
+const { anterior, seguent } = Astro.props;
+---
+
+<p class="seq-ajuda" id="seq-ajuda" role="status" data-seq-estat></p>
+
+<nav class="seq" aria-label="Pas anterior i pas següent">
+  {
+    anterior ? (
+      <a class="seq__enllac seq__enllac--anterior" href={anterior.href} rel="prev">
+        <span class="seq__etiqueta">Anterior</span>
+        <span class="seq__titol">{anterior.titol}</span>
+      </a>
+    ) : (
+      <span />
+    )
+  }
+  {
+    seguent && (
+      <a class="seq__enllac seq__enllac--seguent" href={seguent.href} rel="next" data-seguent>
+        <span class="seq__etiqueta">Següent</span>
+        <span class="seq__titol">{seguent.titol}</span>
+      </a>
+    )
+  }
+</nav>

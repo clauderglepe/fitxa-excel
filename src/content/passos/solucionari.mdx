@@ -1,0 +1,58 @@
+---
+title: "Solucionari"
+ordre: 100
+docent: true
+---
+
+## Fórmules model
+
+Separador d'arguments: punt i coma (Excel en català).
+
+- Producte: `=XLOOKUP([@[Codi producte]];tProductes[Codi];tProductes[Producte])`
+- Import: `=[@Unitats]*[@[Preu unitari]]`
+- Descompte: `=SI.CONJUNT([@Import]>=500;0,1;[@Import]>=200;0,05;CERT;0)`
+- Import net: `=[@Import]*(1-[@Descompte])`
+- D1: `=SUMA.SI.CONJUNT(tVendes[Import net];tVendes[Categoria];A2)`
+- D3: `=COMPTA.SI.CONJUNT(tVendes[Comercial];A2;tVendes[Descompte];">0")`
+
+## Valors de control
+
+Excel mostra els imports arrodonits a dos decimals, però la suma es fa sense arrodonir cada fila.
+
+<Taula etiqueta="Valors de control">
+
+| Control                                 | Resultat                               |
+| --------------------------------------- | -------------------------------------- |
+| Import total sense descomptes           | 7.511,20 €                             |
+| Import net total                        | 6.953,18 € (6.953,175 sense arrodonir) |
+| Import net: Material d'oficina          | 909,00 €                               |
+| Import net: Mobiliari                   | 2.923,50 €                             |
+| Import net: Informàtica                 | 3.120,68 € (3.120,675 sense arrodonir) |
+| Import net: Barcelona                   | 1.976,10 €                             |
+| Import net: Girona                      | 2.021,35 €                             |
+| Import net: Lleida                      | 1.531,13 € (1.531,125 sense arrodonir) |
+| Import net: Tarragona                   | 1.424,60 €                             |
+| Vendes amb descompte: Núria Vidal       | 3                                      |
+| Vendes amb descompte: Marc Soler        | 4                                      |
+| Vendes amb descompte: Aina Puig         | 4                                      |
+| Vendes amb descompte: Pau Ferrer        | 2                                      |
+| Taula dinàmica: Núria Vidal i Mobiliari | 937,50 €                               |
+
+</Taula>
+
+## Noms de les funcions en castellà
+
+<Taula etiqueta="Noms de les funcions en català i en castellà">
+
+| Català              | Castellà             |
+| ------------------- | -------------------- |
+| `XLOOKUP`           | `BUSCARX`            |
+| `CONSULV`           | `BUSCARV`            |
+| `SI.CONJUNT`        | `SI.CONJUNTO`        |
+| `SUMA.SI.CONJUNT`   | `SUMA.SI.CONJUNTO`   |
+| `COMPTA.SI.CONJUNT` | `CONTAR.SI.CONJUNTO` |
+| `INDEX`             | `ÍNDICE`             |
+| `COINCIDEIX`        | `COINCIDIR`          |
+| `CERT`              | `VERDADERO`          |
+
+</Taula>

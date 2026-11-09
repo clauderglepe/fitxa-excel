@@ -1,0 +1,98 @@
+---
+import { taules } from '../data/taules';
+
+interface Props {
+  nom: keyof typeof taules;
+  /** Nivell del títol (2 o 3). */
+  nivell?: 2 | 3;
+  /** Mostra la taula sempre oberta i sense botó de copiar (versió per imprimir). */
+  obert?: boolean;
+}
+const { nom, nivell = 2, obert = false } = Astro.props;
+const Titol = nivell === 3 ? 'h3' : 'h2';
+const Embolcall = obert ? 'div' : 'details';
+const t = taules[nom];
+const id = `taula-${nom}`;
+// Text separat per tabuladors: Excel el reparteix en cel·les en enganxar-lo.
+const tsv = [t.columnes.map((c) => c.text), ...t.files].map((f) => f.join('\t')).join('\n');
+const resum = `${t.files.length} files i ${t.columnes.length} columnes`;
+---
+
+<section class="dades" aria-labelledby={`${id}-titol`}>
+  <Titol id={`${id}-titol`}>{t.titol}</Titol>
+  <p>{t.descripcio}</p>
+  {
+    !obert && (
+      <>
+        <p class="accions">
+          <button
+            type="button"
+            class="btn"
+            data-copia
+            data-text={tsv}
+            data-ok={`Taula ${t.nom} copiada. Ja la pots enganxar a Excel.`}
+            hidden
+          >
+            Copia la taula {t.nom}
+          </button>
+        </p>
+        <p data-alternativa>Obre la taula, selecciona-la i copia-la amb el teclat.</p>
+        <p class="estat" role="status" data-estat></p>
+      </>
+    )
+  }
+  <Embolcall>
+    {!obert && <summary>Mostra la taula {t.nom} ({resum})</summary>}
+    <div class="taula-scroll" role="region" tabindex="0" aria-labelledby={`${id}-cap`}>
+      <table>
+        <caption id={`${id}-cap`}>Taula {t.nom}: {resum}</caption>
+        <thead>
+          <tr>
+            {t.columnes.map((c) => <th scope="col" class:list={{ num: c.num }}>{c.text}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {
+            t.files.map((fila) => (
+              <tr>
+                {fila.map((cel, i) =>
+                  i === 0 ? (
+                    <th scope="row" class:list={{ num: t.columnes[i].num }}>{cel}</th>
+                  ) : (
+                    <td class:list={{ num: t.columnes[i].num }}>{cel}</td>
+                  ),
+                )}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </Embolcall>
+</section>
+
+<script>
+  const hiHaPortapapers = typeof navigator.clipboard?.writeText === 'function';
+
+  document.querySelectorAll<HTMLElement>('[data-alternativa]').forEach((p) => {
+    if (hiHaPortapapers) p.hidden = true;
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('button[data-copia]').forEach((boto) => {
+    if (!hiHaPortapapers) return;
+    boto.hidden = false;
+    boto.addEventListener('click', async () => {
+      const estat = boto.closest('section')?.querySelector<HTMLElement>('[data-estat]');
+      let missatge = boto.dataset.ok ?? '';
+      try {
+        await navigator.clipboard.writeText(boto.dataset.text ?? '');
+      } catch {
+        missatge = "No s'ha pogut copiar. Obre la taula, selecciona-la i copia-la amb el teclat.";
+      }
+      if (!estat) return;
+      // Buidem i tornem a escriure perquè el lector de pantalla anunciï el missatge cada vegada.
+      estat.textContent = '';
+      setTimeout(() => (estat.textContent = missatge), 60);
+    });
+  });
+</script>

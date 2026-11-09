@@ -1,0 +1,7 @@
+Posa aquí els logotips (SVG o PNG) amb aquests noms exactes:
+  empresa_h3.png   ->  Departament d'Empresa i Treball
+  x-talento.png      ->  Inserta Innovació
+  logo-fonce.png          ->  Fundació ONCE
+
+Surten al peu de pàgina amb el text alternatiu corresponent. Si no n'hi ha cap, no es mostra res.
+

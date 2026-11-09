@@ -1,0 +1,17 @@
+---
+// Fila de "cel·les" com a full de càlcul. Només és visual: el text "Pas X de Y" ja diu el mateix.
+interface Props {
+  total: number;
+  actual?: number;
+}
+const { total, actual = 0 } = Astro.props;
+const celles = Array.from({ length: total }, (_, i) => i + 1);
+---
+
+<div class="progres" aria-hidden="true">
+  {
+    celles.map((n) => (
+      <span class:list={['progres__cella', { 'is-feta': n < actual, 'is-actual': n === actual }]} />
+    ))
+  }
+</div>

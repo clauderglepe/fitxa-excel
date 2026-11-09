@@ -1,0 +1,34 @@
+---
+// Mostra els logotips que hi hagi a src/assets/logotips/ (SVG o PNG).
+// Noms de fitxer esperats: dept-empresa-treball, inserta-innovacio, fundacio-once.
+const fitxers = import.meta.glob('../assets/logotips/*.{svg,png}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
+const noms: Record<string, string> = {
+  'dept-empresa-treball': "Departament d'Empresa i Treball",
+  'inserta-innovacio': 'Inserta Innovació',
+  'fundacio-once': 'Fundació ONCE',
+};
+
+const logos = Object.entries(fitxers)
+  .map(([ruta, url]) => {
+    const clau = ruta.split('/').pop()!.replace(/\.(svg|png)$/, '');
+    return { url, alt: noms[clau] ?? clau };
+  })
+  .sort((a, b) => a.alt.localeCompare(b.alt, 'ca'));
+---
+
+{
+  logos.length > 0 && (
+    <ul class="logos" aria-label="Logotips">
+      {logos.map((l) => (
+        <li>
+          <img src={l.url} alt={l.alt} height="48" />
+        </li>
+      ))}
+    </ul>
+  )
+}

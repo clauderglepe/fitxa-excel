@@ -1,0 +1,11 @@
+---
+// Embolcall per a taules àmplies: es pot desplaçar amb el teclat i té nom per als lectors de pantalla.
+interface Props {
+  etiqueta: string;
+}
+const { etiqueta } = Astro.props;
+---
+
+<div class="taula-scroll" role="region" tabindex="0" aria-label={etiqueta}>
+  <slot />
+</div>

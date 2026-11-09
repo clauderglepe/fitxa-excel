@@ -1,0 +1,12 @@
+---
+// Un punt d'autoavaluació amb casella que es recorda al navegador.
+interface Props {
+  id: string;
+}
+const { id } = Astro.props;
+---
+
+<label class="marca marca--punt">
+  <input type="checkbox" data-persist={`auto-${id}`} />
+  <span><slot /></span>
+</label>
